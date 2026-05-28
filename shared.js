@@ -80,3 +80,48 @@ function doLogout(){const u=getSession();if(u)DB.log(u.name+' ametoka','👋');c
 function toggleNotifPanel(){const p=$('notif-panel');if(p){p.classList.toggle('open');renderNotifs();}}
 function renderNotifs(){const db=DB.get();const el=$('notif-list');if(!el)return;const items=db.announcements.slice(0,6);el.innerHTML=items.length?items.map(a=>`<div class="np-item" onclick="location.href='announcements.html'">📢 <strong>${esc(a.title)}</strong><div style="font-size:11px;color:var(--muted)">${timeAgo(a.createdAt)}</div></div>`).join(''):'<p class="np-empty">Hakuna arifa mpya.</p>';}
 function clearNotifs(){htm('notif-list','<p class="np-empty">Zote zimesomwa.</p>');}
+
+
+// Add at the end of shared.js
+
+// Firebase sync functions
+async function syncToFirebase(collectionName, data) {
+  try {
+    const { db, collection, addDoc, setDoc, doc } = await import('./firebase-config.js');
+    const colRef = collection(db, collectionName);
+    await addDoc(colRef, { ...data, syncedAt: Date.now() });
+    return true;
+  } catch (e) {
+    console.warn("Firebase sync failed:", e);
+    return false;
+  }
+}
+
+async function syncLocalToFirebase() {
+  const db = DB.get();
+  const u = getSession();
+  if (!u) return;
+  
+  // Sync announcements to Firebase
+  for (const ann of db.announcements) {
+    if (!ann.synced) {
+      await syncToFirebase('announcements', ann);
+      ann.synced = true;
+    }
+  }
+  
+  // Sync scores to Firebase
+  for (const score of db.scores) {
+    if (!score.synced) {
+      await syncToFirebase('scores', score);
+      score.synced = true;
+    }
+  }
+  
+  DB.set(db);
+}
+
+// Call this every 5 minutes
+setInterval(() => {
+  if (getSession()) syncLocalToFirebase();
+}, 300000);
