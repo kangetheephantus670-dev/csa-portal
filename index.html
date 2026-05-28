@@ -83,4 +83,25 @@
 </style>
 <script src="shared.js"></script>
 <script src="auth.js"></script>
+  <!-- Firebase Module Loader -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEA5AgX_MSkxHe931kHNDnGoojyEF1s6A",
+    authDomain: "uoecsa-choir.firebaseapp.com",
+    projectId: "uoecsa-choir",
+    storageBucket: "uoecsa-choir.firebasestorage.app",
+    messagingSenderId: "191749483996",
+    appId: "1:191749483996:web:41be78e05b5c33b42ef319",
+    measurementId: "G-DQ7HTXSKC7"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  console.log("🔥 Firebase CDN loaded!");
+  
+  window.firebaseApp = app;
+</script>
 </body></html>
