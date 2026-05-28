@@ -98,3 +98,76 @@ function exportScores(){
   a.download='UECSA_Nyimbo_'+new Date().toLocaleDateString().replace(/\//g,'-')+'.csv';a.click();
   toast('Orodha imepakiwa! ⬇️');
 }
+
+let firebaseStorage = null;
+
+async function uploadPDFToFirebase(file, scoreId) {
+  try {
+    const { storage, ref, uploadBytes, getDownloadURL } = await import('./firebase-config.js');
+    const storageRef = ref(storage, `scores/${scoreId}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  } catch (e) {
+    console.warn("Firebase upload failed:", e);
+    return null;
+  }
+}
+
+// Update doAddScore function
+async function doAddScore() {
+  const title = (document.getElementById('sc-title') || { value: '' }).value.trim();
+  const author = (document.getElementById('sc-author') || { value: '' }).value.trim();
+  const key = (document.getElementById('sc-key') || { value: '' }).value;
+  const type = (document.getElementById('sc-type') || { value: '' }).value;
+  const notes = (document.getElementById('sc-notes') || { value: '' }).value.trim();
+  const err = document.getElementById('score-err');
+  const btn = document.getElementById('btn-score');
+  
+  if (err) err.textContent = '';
+  if (!title) return err && (err.textContent = 'Weka jina la wimbo.');
+  if (!author) return err && (err.textContent = 'Weka jina la mtunzi.');
+  if (!key) return err && (err.textContent = 'Chagua ufunguo.');
+  if (!type) return err && (err.textContent = 'Chagua aina ya wimbo.');
+  if (btn) { btn.disabled = true; btn.textContent = 'Inahifadhi...'; }
+  
+  const scoreId = 'sc_' + Date.now();
+  let pdfUrl = null;
+  
+  if ($pdf) {
+    pdfUrl = await uploadPDFToFirebase($pdf, scoreId);
+  }
+  
+  const score = {
+    id: scoreId,
+    title, author, key, type, notes,
+    pdfUrl: pdfUrl,
+    addedBy: getSession().name,
+    addedAt: Date.now(),
+    usedCount: 0
+  };
+  
+  DB.update(d => d.scores.unshift(score));
+  
+  // Try to sync to Firestore
+  try {
+    const { db, collection, addDoc } = await import('./firebase-config.js');
+    await addDoc(collection(db, "scores"), score);
+    console.log("Score synced to Firebase");
+  } catch (e) {
+    console.warn("Firestore sync failed:", e);
+  }
+  
+  closeModal('modal-add-score');
+  ['sc-title', 'sc-author', 'sc-notes'].forEach(id => {
+    const e = document.getElementById(id);
+    if (e) e.value = '';
+  });
+  const ek = document.getElementById('sc-key'); if (ek) ek.value = '';
+  const et = document.getElementById('sc-type'); if (et) et.value = '';
+  const sl = document.getElementById('score-pdf-lbl'); if (sl) sl.textContent = '';
+  $pdf = null;
+  if (btn) { btn.disabled = false; btn.textContent = 'Hifadhi Wimbo'; }
+  DB.log(getSession().name + ' aliongeza wimbo: "' + title + '"', '🎵');
+  toast('Wimbo "' + title + '" umehifadhiwa! 🎵');
+  filterScores();
+}
