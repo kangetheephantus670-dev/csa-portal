@@ -23,13 +23,76 @@ const AI={K:'uecsa_ai_v4',d:{keys:{},songs:{},secKeys:{},seasKeys:{},total:0},
 };
 
 /* ── DB ── */
-const DB={K:'uecsa_db_v4',
-  def(){return{directors:[{uid:'eph-owner',username:'Ephantus',name:'Ephantus',password:'m673',role:'owner',voice:'Conductor',phone:'0700117897',isOwner:true,addedAt:Date.now()}],scores:[],announcements:[],massOrders:[],groupChat:[],dms:{},activity:[],settings:{motto:'KWA KUIMBA TWAENEZA INJILI',tiktok:'kwayayamtgabrieliuoecsa',youtube:'Kwaya ya Mtakatifu Gabrieli Chuo Kikuu Cha Eldoret',phone:'0700117897',phoneRole:'Chairperson'}};},
-  get(){try{const r=localStorage.getItem(this.K);if(!r)return this.def();const d=JSON.parse(r),df=this.def();return{...df,...d,settings:{...df.settings,...(d.settings||{})}};}catch(e){return this.def();}},
-  set(d){try{localStorage.setItem(this.K,JSON.stringify(d));}catch(e){}},
-  update(fn){const d=this.get();fn(d);this.set(d);return d;},
-  log(msg,ic){ic=ic||'📌';const u=getSession();this.update(d=>{d.activity.unshift({msg,ic,by:u?u.name:'?',time:Date.now()});if(d.activity.length>150)d.activity.pop();});},
+// Hybrid DB - tries cloud first, falls back to local
+import CloudDB from './firebase-db.js';
+
+const HybridDB = {
+  _cache: null,
+  _cloudEnabled: true,
+  
+  async init() {
+    try {
+      // Try to load from cloud
+      this._cache = {
+        directors: await CloudDB.getDirectors(),
+        scores: await CloudDB.getScores(),
+        announcements: await CloudDB.getAnnouncements(),
+        massOrders: [],
+        groupChat: [],
+        dms: {},
+        activity: []
+      };
+      this._cloudEnabled = true;
+      console.log("☁️ Using cloud database");
+    } catch (e) {
+      console.warn("Cloud unavailable, using local storage:", e);
+      this._cloudEnabled = false;
+      this._cache = JSON.parse(localStorage.getItem('uecsa_db_v4') || '{}');
+    }
+    return this._cache;
+  },
+  
+  async get() {
+    if (!this._cache) await this.init();
+    return this._cache;
+  },
+  
+  async update(fn) {
+    const data = await this.get();
+    fn(data);
+    
+    if (this._cloudEnabled) {
+      // Save to cloud
+      try {
+        if (data.announcements) {
+          for (const ann of data.announcements) {
+            if (!ann._synced) {
+              await CloudDB.addAnnouncement(ann);
+              ann._synced = true;
+            }
+          }
+        }
+        if (data.scores) {
+          for (const score of data.scores) {
+            if (!score._synced) {
+              await CloudDB.addScore(score);
+              score._synced = true;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Cloud save failed:", e);
+      }
+    }
+    
+    // Always save to local as backup
+    localStorage.setItem('uecsa_db_v4', JSON.stringify(data));
+    return data;
+  }
 };
+
+// Replace the old DB with HybridDB
+window.DB = HybridDB;
 
 /* ── SESSION ── */
 function saveSession(user){try{localStorage.setItem('uecsa_sess_v4',JSON.stringify({uid:user.uid,ts:Date.now()}));}catch(e){}}
