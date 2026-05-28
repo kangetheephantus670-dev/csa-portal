@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="sw"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Matangazo — UECSA Choir Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head><body><div id="toast"></div>
+<header class="topbar">
+  <a class="tb-brand" href="dashboard.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;">
+    <div class="tb-logo"><img id="tb-logo-img" src="" alt=""/></div>
+    <div><div class="tb-title">UECSA <span>Choir</span></div><div class="tb-sub">Wasimamizi</div></div>
+  </a>
+  <nav class="tb-nav"><button class="nav-btn" data-page="dashboard" onclick="location.href='dashboard.html'">🏠 Nyumbani</button><button class="nav-btn  special" data-page="massorder" onclick="location.href='massorder.html'">📄 Mwongozo</button><button class="nav-btn" data-page="chat" onclick="location.href='chat.html'">💬 Mazungumzo</button><button class="nav-btn" data-page="scores" onclick="location.href='scores.html'">📚 Nyimbo</button><button class="nav-btn" data-page="announcements" onclick="location.href='announcements.html'">📢 Matangazo</button><button class="nav-btn" data-page="about" onclick="location.href='about.html'">ℹ️ Kuhusu</button></nav>
+  <div class="tb-right">
+    <button class="tb-notif-btn" onclick="toggleNotifPanel()">🔔<span class="notif-dot" id="notif-dot" style="display:none">!</span></button>
+    <div class="tb-user" onclick="location.href='about.html'" style="cursor:pointer;display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:10px;">
+      <div class="tb-av" id="tb-av">E</div>
+      <div><div class="tb-uname" id="tb-uname" style="font-size:13px;font-weight:600;line-height:1.2;"></div><div class="tb-urole" id="tb-urole" style="font-size:10.5px;color:var(--muted);"></div></div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">⏻</button>
+  </div>
+</header>
+<div class="notif-panel" id="notif-panel">
+  <div class="np-head">🔔 Arifa<button class="np-clear" onclick="clearNotifs()">Futa zote</button></div>
+  <div id="notif-list"><p class="np-empty">Hakuna arifa mpya.</p></div>
+</div>
+<button class="owner-fab" id="owner-fab" onclick="document.getElementById('owner-panel').classList.toggle('open');typeof renderOwnerPanel==='function'&&renderOwnerPanel()">👁</button>
+<div class="owner-panel" id="owner-panel">
+  <div class="op-head">👁 Ufuatiliaji<button class="op-close" onclick="document.getElementById('owner-panel').classList.remove('open')">✕</button></div>
+  <div id="op-content"></div>
+</div>
+<script>document.addEventListener('DOMContentLoaded',function(){var u=requireAuth();if(!u)return;buildTopbar('announcements');});</script>
+<div style="padding:24px 28px;max-width:900px;">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;">
+    <h1 style="font-family:'Cinzel',serif;font-size:24px;font-weight:700;flex:1;">📢 Matangazo</h1>
+    <div id="ann-actions" style="display:none;">
+      <button class="btn btn-gold btn-sm" onclick="openModal('modal-ann')">+ Tangazo Jipya</button>
+    </div>
+  </div>
+  <div id="ann-list"><div class="dots"><span></span><span></span><span></span></div></div>
+</div>
+<div class="modal-bg" id="modal-ann">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('modal-ann')">&#x00D7;</button>
+    <h3>📢 Tangazo Jipya</h3>
+    <div class="fg"><label class="fl">Kichwa cha Habari *</label>
+      <input class="fi" id="ann-title" type="text" placeholder="Kichwa cha tangazo..."/></div>
+    <div class="fg"><label class="fl">Aina</label>
+      <select class="fs" id="ann-type">
+        <option value="general">📋 Jumla (General)</option>
+        <option value="rehearsal">🎵 Mazoezi (Rehearsal)</option>
+        <option value="urgent">🚨 Haraka! (Urgent)</option>
+        <option value="event">🎉 Tukio (Event)</option>
+      </select></div>
+    <div class="fg"><label class="fl">Ujumbe *</label>
+      <textarea class="mta" id="ann-body" rows="5" placeholder="Andika tangazo hapa..."></textarea></div>
+    <button class="btn btn-gold" style="width:100%;padding:13px;" onclick="doPostAnn()">Tuma Tangazo</button>
+    <div class="merr" id="ann-err"></div>
+  </div>
+</div>
+<script src="shared.js"></script>
+<script src="announcements.js"></script>
+</body></html>

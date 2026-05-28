@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sw"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — UECSA Choir Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head><body>
+<div id="toast"></div>
+<header class="topbar">
+  <a class="tb-brand" href="dashboard.html" style="text-decoration:none;color:inherit;">
+    <div class="tb-logo"><img id="tb-logo-img" src="" alt=""/></div>
+    <div><div class="tb-title">UECSA <span>Choir</span></div><div class="tb-sub">Wasimamizi</div></div>
+  </a>
+  <nav class="tb-nav"><button class="nav-btn" data-page="dashboard" onclick="location.href='dashboard.html'">🏠 Nyumbani</button><button class="nav-btn special" data-page="massorder" onclick="location.href='massorder.html'">📄 Mwongozo</button><button class="nav-btn" data-page="chat" onclick="location.href='chat.html'">💬 Mazungumzo</button><button class="nav-btn" data-page="scores" onclick="location.href='scores.html'">📚 Nyimbo</button><button class="nav-btn" data-page="announcements" onclick="location.href='announcements.html'">📢 Matangazo</button><button class="nav-btn" data-page="about" onclick="location.href='about.html'">ℹ️ Kuhusu</button></nav>
+  <div class="tb-right">
+    <button class="tb-notif-btn" onclick="toggleNotifPanel()">🔔<span class="notif-dot" id="notif-dot" style="display:none">!</span></button>
+    <div class="tb-user" onclick="location.href='about.html'">
+      <div class="tb-av" id="tb-av">E</div>
+      <div><div class="tb-uname" id="tb-uname"></div><div class="tb-urole" id="tb-urole"></div></div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()" title="Toka">⏻</button>
+  </div>
+</header>
+<div class="notif-panel" id="notif-panel">
+  <div class="np-head">🔔 Arifa<button class="np-clear" onclick="clearNotifs()">Futa zote</button></div>
+  <div id="notif-list"><p class="np-empty">Hakuna arifa mpya.</p></div>
+</div>
+<button class="owner-fab" id="owner-fab" onclick="$('owner-panel').classList.toggle('open');renderOwnerPanel()">👁</button>
+<div class="owner-panel" id="owner-panel">
+  <div class="op-head">👁 Ufuatiliaji — Mmiliki<button class="op-close" onclick="$('owner-panel').classList.remove('open')">✕</button></div>
+  <div id="op-content"></div>
+</div>
+<script>document.addEventListener('DOMContentLoaded',()=>{const u=requireAuth();if(!u)return;buildTopbar('dashboard');});</script>
+<div class="dash-body">
+  <div class="home-hero">
+    <div class="hh-text"><h2 id="hw-greet">Karibu.</h2><p id="hw-sub">Mfumo wa Wasimamizi wa Kwaya.</p></div>
+    <div class="hh-date"><div class="hh-day" id="hw-day">—</div><div class="hh-month" id="hw-month">—</div></div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-pill" onclick="location.href='about.html'"><span class="sp-ic">👥</span><span class="sp-num" id="st-dirs">—</span><span class="sp-lbl">Wasimamizi</span></div>
+    <div class="stat-pill" onclick="location.href='scores.html'"><span class="sp-ic">🎵</span><span class="sp-num" id="st-scores">—</span><span class="sp-lbl">Nyimbo</span></div>
+    <div class="stat-pill" onclick="location.href='massorder.html'"><span class="sp-ic">📄</span><span class="sp-num" id="st-orders">—</span><span class="sp-lbl">Mwongozo</span></div>
+    <div class="stat-pill" onclick="location.href='chat.html'"><span class="sp-ic">💬</span><span class="sp-num" id="st-msgs">—</span><span class="sp-lbl">Ujumbe</span></div>
+    <div class="stat-pill" onclick="location.href='announcements.html'"><span class="sp-ic">📢</span><span class="sp-num" id="st-anns">—</span><span class="sp-lbl">Matangazo</span></div>
+  </div>
+  <div class="home-cards">
+    <div class="hcard hc-massorder" onclick="location.href='massorder.html'"><div class="hcard-icon">📄</div><div class="hcard-body"><h3>Mwongozo wa Misa</h3><p>Unda poster nzuri — chapisha au shiriki</p></div><div class="hcard-arrow">→</div></div>
+    <div class="hcard hc-chat" onclick="location.href='chat.html'"><div class="hcard-icon">💬</div><div class="hcard-body"><h3>Mazungumzo</h3><p>Kikundi na ujumbe wa kibinafsi</p></div><div class="hcard-arrow">→</div></div>
+    <div class="hcard hc-scores" onclick="location.href='scores.html'"><div class="hcard-icon">📚</div><div class="hcard-body"><h3>Nyimbo Zilizohifadhiwa</h3><p>Pakia, tafuta na pakua PDF</p></div><div class="hcard-arrow">→</div></div>
+    <div class="hcard hc-ann" onclick="location.href='announcements.html'"><div class="hcard-icon">📢</div><div class="hcard-body"><h3>Matangazo</h3><p>Taarifa muhimu za kwaya</p></div><div class="hcard-arrow">→</div></div>
+    <div class="hcard hc-about" onclick="location.href='about.html'"><div class="hcard-icon">ℹ️</div><div class="hcard-body"><h3>Kuhusu Kwaya</h3><p>Wasimamizi, historia na mipangilio</p></div><div class="hcard-arrow">→</div></div>
+  </div>
+  <div class="home-sec"><div class="hs-head"><span class="hs-title">📢 Matangazo ya Hivi Karibuni</span><button class="hs-link" onclick="location.href='announcements.html'">Ona Yote →</button></div><div id="home-anns"></div></div>
+  <div class="home-sec" id="owner-sec" style="display:none;"><div class="hs-head"><span class="hs-title">👁 Shughuli za Hivi Karibuni</span><span class="hs-badge">Mmiliki</span></div><div id="activity-list"></div></div>
+</div>
+<script src="shared.js"></script>
+<script src="dashboard.js"></script>
+</body></html>

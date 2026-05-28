@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="sw"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nyimbo — UECSA Choir Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head><body>
+<div id="toast"></div>
+<header class="topbar">
+  <a class="tb-brand" href="dashboard.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;">
+    <div class="tb-logo"><img id="tb-logo-img" src="" alt=""/></div>
+    <div><div class="tb-title">UECSA <span>Choir</span></div><div class="tb-sub">Wasimamizi</div></div>
+  </a>
+  <nav class="tb-nav"><button class="nav-btn" data-page="dashboard" onclick="location.href='dashboard.html'">🏠 Nyumbani</button><button class="nav-btn  special" data-page="massorder" onclick="location.href='massorder.html'">📄 Mwongozo</button><button class="nav-btn" data-page="chat" onclick="location.href='chat.html'">💬 Mazungumzo</button><button class="nav-btn" data-page="scores" onclick="location.href='scores.html'">📚 Nyimbo</button><button class="nav-btn" data-page="announcements" onclick="location.href='announcements.html'">📢 Matangazo</button><button class="nav-btn" data-page="about" onclick="location.href='about.html'">ℹ️ Kuhusu</button></nav>
+  <div class="tb-right">
+    <button class="tb-notif-btn" onclick="toggleNotifPanel()">🔔<span class="notif-dot" id="notif-dot" style="display:none">!</span></button>
+    <div class="tb-user" onclick="location.href='about.html'" style="cursor:pointer;display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:10px;">
+      <div class="tb-av" id="tb-av">E</div>
+      <div><div class="tb-uname" id="tb-uname" style="font-size:13px;font-weight:600;"></div><div class="tb-urole" id="tb-urole" style="font-size:10.5px;color:var(--muted);"></div></div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">⏻</button>
+  </div>
+</header>
+<div class="notif-panel" id="notif-panel">
+  <div class="np-head">🔔 Arifa<button class="np-clear" onclick="clearNotifs()">Futa zote</button></div>
+  <div id="notif-list"><p class="np-empty">Hakuna arifa mpya.</p></div>
+</div>
+<button class="owner-fab" id="owner-fab" onclick="document.getElementById('owner-panel').classList.toggle('open');typeof renderOwnerPanel==='function'&&renderOwnerPanel()">👁</button>
+<div class="owner-panel" id="owner-panel">
+  <div class="op-head">👁 Ufuatiliaji<button class="op-close" onclick="document.getElementById('owner-panel').classList.remove('open')">✕</button></div>
+  <div id="op-content"></div>
+</div>
+<script>document.addEventListener('DOMContentLoaded',function(){var u=requireAuth();if(!u)return;buildTopbar('scores');});</script>
+<div style="padding:24px 28px;max-width:1100px;">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap;">
+    <div style="flex:1;"><h1 style="font-family:'Cinzel',serif;font-size:24px;font-weight:700;">📚 Nyimbo Zilizohifadhiwa</h1></div>
+    <button class="btn btn-ghost btn-sm" onclick="exportScores()">&#x2B07; CSV</button>
+    <button class="btn btn-blue btn-sm" onclick="openModal('modal-add-score')">+ Ongeza Wimbo</button>
+  </div>
+  <div class="scores-bar">
+    <div class="scores-search-wrap"><span>🔍</span>
+      <input type="search" class="scores-search" id="scores-search" placeholder="Tafuta jina, mtunzi, ufunguo, aina..." oninput="filterScores()"/>
+    </div>
+    <select class="filter-sel" id="scores-key-filter" onchange="filterScores()"><option value="">Ufunguo Wote</option></select>
+    <select class="filter-sel" id="scores-type-filter" onchange="filterScores()"><option value="">Aina Zote</option></select>
+    <select class="filter-sel" id="scores-sort" onchange="filterScores()">
+      <option value="new">Mpya Kwanza</option><option value="az">A–Z</option><option value="used">Inayotumika</option>
+    </select>
+  </div>
+  <div class="scores-count" id="scores-count"></div>
+  <div class="scores-grid" id="scores-grid"><div class="dots"><span></span><span></span><span></span></div></div>
+</div>
+
+<!-- ADD SCORE MODAL -->
+<div class="modal-bg" id="modal-add-score">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('modal-add-score')">&#x00D7;</button>
+    <h3>🎵 Ongeza Wimbo</h3>
+    <div class="fg"><label class="fl">Jina la Wimbo *</label><input class="fi" id="sc-title" type="text" placeholder="e.g. Baba Yetu"/></div>
+    <div class="fg"><label class="fl">Mtunzi / Mwandishi *</label><input class="fi" id="sc-author" type="text" placeholder="e.g. Christopher Tin"/></div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Ufunguo *</label><select class="fs" id="sc-key"><option value="">Chagua...</option></select></div>
+      <div class="fg"><label class="fl">Aina *</label><select class="fs" id="sc-type"><option value="">Chagua...</option></select></div>
+    </div>
+    <div class="fg"><label class="fl">Maelezo (hiari)</label><textarea class="mta" id="sc-notes" rows="2" placeholder="Maelezo..."></textarea></div>
+    <div class="dz" id="score-dz" onclick="document.getElementById('score-pdf').click()"
+      ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="onScorePdfDrop(event)">
+      <input type="file" id="score-pdf" accept=".pdf" style="display:none" onchange="onScorePdfFile(this)"/>
+      <span style="font-size:26px;">📄</span>
+      <p>Click au drag <strong>PDF</strong> hapa (hiari)</p>
+      <p class="chosen" id="score-pdf-lbl"></p>
+    </div>
+    <button class="btn btn-blue" style="width:100%;padding:13px;" id="btn-score" onclick="doAddScore()">Hifadhi Wimbo</button>
+    <div class="merr" id="score-err"></div>
+  </div>
+</div>
+
+<!-- VIEW SCORE MODAL -->
+<div class="modal-bg" id="modal-view-score">
+  <div class="modal wide">
+    <button class="modal-x" onclick="closeModal('modal-view-score')">&#x00D7;</button>
+    <h3 id="view-score-title">Wimbo</h3>
+    <div id="view-score-body"></div>
+  </div>
+</div>
+<script src="shared.js"></script>
+<script src="scores.js"></script>
+</body></html>
